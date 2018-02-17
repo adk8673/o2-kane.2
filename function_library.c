@@ -64,7 +64,7 @@ void createChildProcess(const char* targetProgram, const char* processName)
 	else if (forkedPid < 0)
 	{
 		writeError("Failed to fork process", processName);
-	}
+	}	
 }
 
 // Function taken from Robbins textbook

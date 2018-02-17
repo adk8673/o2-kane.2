@@ -1,18 +1,21 @@
 CC=gcc
+MASTER_OBJECTS=master.o function_library.o
+PRODUCER_OBJECTS=producer.o function_library.o
+CONSUMER_OBJECTS=consumer.o function_library.o
 
 default: master producer consumer
 
 %.o: %.c
-	$(CC) -o $< -o $@
+	$(CC) -c $< -o $@
 
-master: master.o, function_libary.o
-	$(CC) -o master master.o function_library.o
+master: $(MASTER_OBJECTS)
+	$(CC) $(MASTER_OBJECTS) -o master
 
 producer: producer.o function_library.o
-	$(CC) -o producer producer.o function_library.o
+	$(CC) $(PRODUCER_OBJECTS) -o producer
 
 consumer: consumer.o function_library.o
-	$(CC) -o consumer consumer.o function_library.o
+	$(CC) $(CONSUMER_OBJECTS) -o consumer
 
 clean:
 	rm -f master
