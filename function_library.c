@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
+#include <sys/shm.h>
 #include "function_library.h"
 
 // Check c-string to detemine if it contains
@@ -121,7 +122,33 @@ key_t getKey(int id)
         char cwd[1024];
         getcwd(cwd, sizeof(cwd));
         key = ftok(cwd, id);
-
         return key;
 }
 
+void* getExistingSharedMemory(int id, const char* processName)
+{
+	key_t key = getKey(id);
+	void* pResult = NULL;
+	int shmid = -1;
+	if ((shmid = shmget(key, 0, 0777)) == -1)
+	{
+		writeError("Failed to get SHMID of existing memory", processName);
+	}
+	else
+	{
+		pResult = shmat(shmid, 0, 0);
+		if ((int)pResult == -1)
+		{
+			pResult = NULL;
+			writeError("Failed to map existing shared memory to local address space", processName);
+		}
+	}
+	
+	return pResult;
+}
+
+void deallocateSharedMemory(int shmid, const char* processName)
+{
+	if (shmctl(shmid, IPC_RMID, NULL) == -1)
+		writeError("Failed to deallocated shared memory for key", processName);
+}

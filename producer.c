@@ -4,6 +4,7 @@
 // 2/10/2018
 // CS 4760 Project 2
 #include <sys/types.h>
+#include <sys/shm.h>
 #include <sys/ipc.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -12,15 +13,13 @@
 
 int main(int argc, char** argv)
 {
-	key_t kTurn = getKey(1);
-	printf("%d\n", kTurn);
-	int shmidTurn = shmget(kTurn, 0, 0);
-	printf("%d\n", shmidTurn);
-	int* turn;
-	turn = (int*)shmat(shmidTurn, NULL, 0);
-	printf("%d\n", turn);
-	printf("%d\n", errno);
-	/**turn = 1;
-	printf("%d\n", turn);*/	
-	return 0;
+	int* turn = getExistingSharedMemory(1, argv[0]);
+	int* numProcesses = getExistingSharedMemory(2, argv[0]);
+	int* flags = getExistingSharedMemory(3, argv[0]);
+	*turn = 1;
+	*numProcesses = 1;
+	*flags = 1;
+	printf("turn: %d\n", *turn);
+	printf("numProcesses: %d\n", *numProcesses);
+	printf("flags: %d\n", *flags);
 }

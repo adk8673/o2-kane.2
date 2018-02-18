@@ -9,19 +9,21 @@
 #include<stdlib.h>
 #include<errno.h>
 #include<sys/shm.h>
+#include<sys/ipc.h>
 #include<sys/types.h>
 #include"function_library.h"
 
 #define BUFFER_SIZE 500
 
 void displayHelp();
-void deallocateSharedMemory();
+void deallocateAllSharedMemory();
 void allocateSharedMemory();
 
 char* processName;
 
 int shmidTurn;
 int shmidFlags;
+int shmidNumProcesses;
 int shmidBufferFlag1;
 int shmidBuffer1;
 int shmidBufferFlag2;
@@ -71,7 +73,7 @@ int main(int argc, char** argv)
 			n = 18;
 		}
 
-		// create a child proceder
+		// create a child producer
 		createChildProcess("./producer", NULL);
 		--n;
 
@@ -87,78 +89,84 @@ int main(int argc, char** argv)
 	
 	pid_t childpid;
 	int status;
-	while((childpid = wait(&status)) > 0);
+	while((childpid = wait(&status)) > 0)
+	{
+		printf("waiting...%d\n", childpid);
+	}
 
-	deallocateSharedMemory();	
-	
+	deallocateAllSharedMemory();	
+	printf("goodbye\n");	
 	return 0;
 }
 
 void allocateSharedMemory(int numChildren)
 {
-	key_t kTurn, kFlags, kBufferFlag1, kBuffer1, kBufferFlag2, kBuffer2, kBufferFlag3, kBuffer3, kBufferFlag4, kBuffer4, kBufferFlag5, kBuffer5;
-	
+	key_t kTurn, kFlags, kNumProcesses,  kBufferFlag1, kBuffer1, kBufferFlag2, kBuffer2, kBufferFlag3, kBuffer3, kBufferFlag4, kBuffer4, kBufferFlag5, kBuffer5;
+
+	const int memFlags = (0777 | IPC_CREAT);	
 	//generate keys for shared memory variables
 	kTurn = getKey(1);
-	if ((shmidTurn = shmget(kTurn, sizeof(int), IPC_CREAT)) == -1)
+	if ((shmidTurn = shmget(kTurn, sizeof(int), memFlags)) == -1)
 	{
 		writeError("Failed to allocated shared memory for key", processName);
 	}
-/*	else
-	{
-		int result = shmctl(shmidTurn, 
-	}
-*/	
+	
 	kFlags = getKey(2);
-	if((shmidFlags = shmget(kFlags, sizeof(int) * numChildren, IPC_CREAT)) == -1)
+	if((shmidFlags = shmget(kFlags, sizeof(int) * numChildren, memFlags)) == -1)
 	{
 		writeError("Failed to allocate shared memory for flags", processName);
 	}
-
+	
+	kNumProcesses = getKey(3);
+	if((shmidNumProcesses = shmget(kNumProcesses, sizeof(int), memFlags)) == -1)
+	{
+		writeError("Failed to allocate shared memory for flags", processName);
+	}
+/*	
 	kBufferFlag1 = getKey(3);
-	if((shmidBufferFlag1 = shmget(kBufferFlag1, sizeof(int), IPC_CREAT)) == -1)
+	if((shmidBufferFlag1 = shmget(kBufferFlag1, sizeof(int), memFlags)) == -1)
 	{
 		writeError("Failed to allocate shared memory for buffer 1 flag", processName);
 	}
 
 	kBuffer1 = getKey(4);
-	if((shmidBuffer1 = shmget(kBuffer1, sizeof(BUFFER_SIZE), IPC_CREAT)) == -1)
+	if((shmidBuffer1 = shmget(kBuffer1, sizeof(BUFFER_SIZE), memFlags)) == -1)
 	{
 		writeError("Failed to allocate shared memory for buffer 1", processName);
 	}
 
 	kBufferFlag2 = getKey(5);
-	if((shmidBufferFlag2 = shmget(kBufferFlag2, sizeof(int), IPC_CREAT)) == -1)
+	if((shmidBufferFlag2 = shmget(kBufferFlag2, sizeof(int), memFlags)) == -1)
 	{
 		writeError("Failed to allocate shared memory for buffer 2 flag", processName);
 	}
 
 	kBuffer2 = getKey(6);
-	if((shmidBuffer2 = shmget(kBuffer2, sizeof(BUFFER_SIZE), IPC_CREAT)) == -1)
+	if((shmidBuffer2 = shmget(kBuffer2, sizeof(BUFFER_SIZE), memFlags)) == -1)
 	{
 		writeError("Failed to allocate shared memory for buffer 2", processName);
 	}
 
 	kBufferFlag3 = getKey(7);
-	if((shmidBufferFlag3 = shmget(kBufferFlag3, sizeof(int), IPC_CREAT)) == -1)
+	if((shmidBufferFlag3 = shmget(kBufferFlag3, sizeof(int), memFlags)) == -1)
 	{
 		writeError("Failed to allocate shared memory for buffer 3 flag", processName);
 	}
 
 	kBuffer3 = getKey(8);
-	if((shmidBuffer3 = shmget(kBuffer3, sizeof(BUFFER_SIZE), IPC_CREAT)) == -1)
+	if((shmidBuffer3 = shmget(kBuffer3, sizeof(BUFFER_SIZE), memFlags)) == -1)
 	{
 		writeError("Failed to allocate shared memory for buffer 3", processName);
 	}
 
 	kBufferFlag4 = getKey(9);
-	if((shmidBufferFlag4 = shmget(kBufferFlag4, sizeof(int), IPC_CREAT)) == -1)
+	if((shmidBufferFlag4 = shmget(kBufferFlag4, sizeof(int), memFlags)) == -1)
 	{
 		writeError("Failed to allocate shared memory for buffer 4 flag", processName);
 	}
 
 	kBuffer4 = getKey(10);
-	if((shmidBuffer4 = shmget(kBuffer4, sizeof(BUFFER_SIZE), IPC_CREAT)) == -1)
+	if((shmidBuffer4 = shmget(kBuffer4, sizeof(BUFFER_SIZE), memFlags)) == -1)
 	{
 		writeError("Failed to allocate shared memory for buffer 4", processName);
 	}
@@ -170,49 +178,17 @@ void allocateSharedMemory(int numChildren)
 	}
 
 	kBuffer5 = getKey(12);
-	if((shmidBuffer5 = shmget(kBuffer5, sizeof(BUFFER_SIZE), IPC_CREAT)) == -1)
+	if((shmidBuffer5 = shmget(kBuffer5, sizeof(BUFFER_SIZE), memFlags)) == -1)
 	{
 		writeError("Failed to allocate shared memory for buffer 5", processName);
-	}
+	}*/
 }
 
-void deallocateSharedMemory(const char* processName)
+void deallocateAllSharedMemory()
 {
-	if (shmctl(shmidTurn, IPC_RMID, NULL) == -1)
-		writeError("Failed to deallocated shared memory for key", processName);
-
-	if (shmctl(shmidFlags, IPC_RMID, NULL) == -1)
-		writeError("Failed to deallocated shared memory for key", processName);
-
-	if (shmctl(shmidBufferFlag1, IPC_RMID, NULL) == -1)
-		writeError("Failed to deallocated shared memory for key", processName);
-
-	if (shmctl(shmidBuffer1, IPC_RMID, NULL) == -1)
-		writeError("Failed to deallocated shared memory for key", processName);
-
-	if (shmctl(shmidBufferFlag2, IPC_RMID, NULL) == -1)
-		writeError("Failed to deallocated shared memory for key", processName);
-
-	if (shmctl(shmidBuffer2, IPC_RMID, NULL) == -1)
-		writeError("Failed to deallocated shared memory for key", processName);
-
-	if (shmctl(shmidBufferFlag3, IPC_RMID, NULL) == -1)
-		writeError("Failed to deallocated shared memory for key", processName);
-
-	if (shmctl(shmidBuffer3, IPC_RMID, NULL) == -1)
-		writeError("Failed to deallocated shared memory for key", processName);
-
-	if (shmctl(shmidBufferFlag4, IPC_RMID, NULL) == -1)
-		writeError("Failed to deallocated shared memory for key", processName);
-
-	if (shmctl(shmidBuffer4, IPC_RMID, NULL) == -1)
-		writeError("Failed to deallocated shared memory for key", processName);
-
-	if (shmctl(shmidBufferFlag5, IPC_RMID, NULL) == -1)
-		writeError("Failed to deallocated shared memory for key", processName);
-
-	if (shmctl(shmidBuffer5, IPC_RMID, NULL) == -1)
-		writeError("Failed to deallocated shared memory for key", processName);
+	deallocateSharedMemory(shmidTurn, processName);
+	deallocateSharedMemory(shmidFlags, processName);
+	deallocateSharedMemory(shmidNumProcesses, processName);
 }
 
 void displayHelp()
