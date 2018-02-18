@@ -9,6 +9,8 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
 #include "function_library.h"
 
 // Check c-string to detemine if it contains
@@ -112,3 +114,14 @@ int makeargv(const char *s, const char *delimiters, char ***argvp)
 	*((*argvp) +  numtokens) = NULL;
 	return numtokens;
 }
+
+key_t getKey(int id)
+{
+        key_t key = -1;
+        char cwd[1024];
+        getcwd(cwd, sizeof(cwd));
+        key = ftok(cwd, id);
+
+        return key;
+}
+
