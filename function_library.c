@@ -12,7 +12,11 @@
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <time.h>
+#include <signal.h>
 #include "function_library.h"
+
+#define BILLION 1000000000L
 
 // Check c-string to detemine if it contains
 // only numbers
@@ -44,7 +48,7 @@ void writeError(const char* errorMessage, const char* processName)
 
 // Create a child process by forking a child and executing the target process
 // using command line arguements passed
-void createChildProcess(const char* targetProgram, const char* processName)
+pid_t createChildProcess(const char* targetProgram, const char* processName)
 {
 	pid_t forkedPid = fork();
 
@@ -67,7 +71,9 @@ void createChildProcess(const char* targetProgram, const char* processName)
 	else if (forkedPid < 0)
 	{
 		writeError("Failed to fork process", processName);
-	}	
+	}
+
+	return forkedPid;	
 }
 
 // Function taken from Robbins textbook
@@ -152,3 +158,25 @@ void deallocateSharedMemory(int shmid, const char* processName)
 	if (shmctl(shmid, IPC_RMID, NULL) == -1)
 		writeError("Failed to deallocated shared memory for key", processName);
 }
+
+// function taken from Robbins textbook
+int setPeriodic(double sec)
+{
+	time_t timerid;
+	struct itimerspec value;
+
+	if (timer_create(CLOCK_REALTIME, NULL, &timerid) == -1)
+		return -1;
+
+	value.it_interval.tv_sec = (long)sec;
+	value.it_interval.tv_nsec = (sec- value.it_interval.tv_sec) * BILLION;
+	if (value.it_interval.tv_nsec >= BILLION)
+	{
+		value.it_interval.tv_sec++;
+		value.it_interval.tv_nsec -= BILLION;
+	}	
+	
+	value.it_value = value.it_interval;
+	return timer_settime(timerid, 0, &value, NULL);
+}
+
