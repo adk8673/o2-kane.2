@@ -50,7 +50,7 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 	struct tm tm = *localtime(&t);
 	
 	prodLog = fopen("prod.log", "w");
-	fprintf(prodLog, "%d:%d:%d\tStarted\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
+	fprintf(prodLog, "%02d:%02d:%02d\tStarted\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
 	fclose(prodLog);	
 
 	int j;
@@ -85,7 +85,7 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 			t = time(NULL);
 			tm = *localtime(&t);
 			prodLog = fopen("prod.log","a");
-			fprintf(prodLog, "%d:%d:%d\tWrite\t%d\t%s\n", tm.tm_hour, tm.tm_min, tm.tm_sec, 1, buffer1);
+			fprintf(prodLog, "%02d:%02d:%02d\tWrite\t%d\t%s\n", tm.tm_hour, tm.tm_min, tm.tm_sec, 1, buffer1);
 			fclose(prodLog);
 			wrote = 1;
 		}
@@ -97,7 +97,7 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 			t = time(NULL);
 			tm = *localtime(&t);
 			prodLog = fopen("prod.log","a");
-			fprintf(prodLog, "%d:%d:%d\tWrite\t%d\t%s\n", tm.tm_hour, tm.tm_min, tm.tm_sec, 2, buffer2);
+			fprintf(prodLog, "%02d:%02d:%02d\tWrite\t%d\t%s\n", tm.tm_hour, tm.tm_min, tm.tm_sec, 2, buffer2);
 			fclose(prodLog);
 			wrote = 1;
 		}
@@ -109,7 +109,7 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 			t = time(NULL);
 			tm = *localtime(&t);
 			prodLog = fopen("prod.log", "a");
-			fprintf(prodLog, "%d:%d:%d\tWrite\t%d\t%s\n", tm.tm_hour, tm.tm_min, tm.tm_sec, 3, buffer3);
+			fprintf(prodLog, "%02d:%02d:%02d\tWrite\t%d\t%s\n", tm.tm_hour, tm.tm_min, tm.tm_sec, 3, buffer3);
 			fclose(prodLog);
 			wrote = 1;
 		}
@@ -121,7 +121,7 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 			t = time(NULL);
 			tm = *localtime(&t);
 			prodLog = fopen("prod.log", "a");
-			fprintf(prodLog, "%d:%d:%d\tWrite\t%d\t%s\n", tm.tm_hour, tm.tm_min, tm.tm_sec, 4, buffer4);
+			fprintf(prodLog, "%02d:%02d:%02d\tWrite\t%d\t%s\n", tm.tm_hour, tm.tm_min, tm.tm_sec, 4, buffer4);
 			fclose(prodLog);
 			wrote = 1;
 		}
@@ -136,7 +136,7 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 		if (wrote == 0)
 		{
 			prodLog = fopen("prod.log", "a");
-			fprintf(prodLog, "%d:%d:%d\tCheck\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
+			fprintf(prodLog, "%02d:%02d:%02d\tCheck\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
 			fclose(prodLog);
 		}
 		
@@ -156,7 +156,7 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 	t = time(NULL);
 	tm = *localtime(&t);
 	prodLog = fopen("prod.log", "a");
-	fprintf(prodLog, "%d:%d:%d\tTerminated\tNormal\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
+	fprintf(prodLog, "%02d:%02d:%02d\tTerminated\tNormal\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
 	fclose(prodLog);
 }
 
@@ -164,12 +164,12 @@ void handleTerm(int signo)
 {
 	if (signo == SIGTERM)
 	{
-		printf("test1producer\n");
 		time_t t = time(NULL);
 		struct tm tm = *localtime(&t);
 		FILE* prodLog = fopen("prod.log", "a");
-		fprintf(prodLog, "%d:%d:%d\tTerminated\tKilled\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
+		fprintf(prodLog, "%02d:%02d:%02d\tTerminated\tKilled\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
 		fclose(prodLog);
+		fprintf(stderr, "Producer killed by master\n");
 		exit(0);
 	}
 }

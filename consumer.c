@@ -57,7 +57,7 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 	struct tm tm = *localtime(&t);
 	
 	consLog = fopen(fileName, "w");
-	fprintf(consLog, "%d:%d:%d\tStarted\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
+	fprintf(consLog, "%02d:%02d:%02d\tStarted\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
 	fclose(consLog);
 	
 	int j;
@@ -92,7 +92,7 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 			t = time(NULL);
 			struct tm tm = *localtime(&t);
 			consLog = fopen(fileName, "a");
-			fprintf(consLog, "%d:%d:%d\tRead\t%d\t%s\n", tm.tm_hour, tm.tm_min, tm.tm_sec, 1, readBuf);
+			fprintf(consLog, "%02d:%02d:%02d\tRead\t%d\t%s\n", tm.tm_hour, tm.tm_min, tm.tm_sec, 1, readBuf);
 			fclose(consLog);
 		}
 		else if (*bufferFlag2 == 1)
@@ -103,7 +103,7 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 			t = time(NULL);
 			struct tm tm = *localtime(&t);
 			consLog = fopen(fileName, "a");
-			fprintf(consLog, "%d:%d:%d\tRead\t%d\t%s\n", tm.tm_hour, tm.tm_min, tm.tm_sec, 2, readBuf);
+			fprintf(consLog, "%02d:%02d:%02d\tRead\t%d\t%s\n", tm.tm_hour, tm.tm_min, tm.tm_sec, 2, readBuf);
 			fclose(consLog);
 		}
 		else if (*bufferFlag3 == 1)
@@ -114,7 +114,7 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 			t = time(NULL);
 			struct tm tm = *localtime(&t);
 			consLog = fopen(fileName, "a");
-			fprintf(consLog, "%d:%d:%d\tRead\t%d\t%s\n", tm.tm_hour, tm.tm_min, tm.tm_sec, 3, readBuf);
+			fprintf(consLog, "%02d:%02d:%02d\tRead\t%d\t%s\n", tm.tm_hour, tm.tm_min, tm.tm_sec, 3, readBuf);
 			fclose(consLog);
 		}
 		else if (*bufferFlag4 == 1)
@@ -125,7 +125,7 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 			t = time(NULL);
 			struct tm tm = *localtime(&t);
 			consLog = fopen(fileName, "a");
-			fprintf(consLog, "%d:%d:%d\tRead\t%d\t%s\n", tm.tm_hour, tm.tm_min, tm.tm_sec, 4, readBuf);
+			fprintf(consLog, "%02d:%02d:%02d\tRead\t%d\t%s\n", tm.tm_hour, tm.tm_min, tm.tm_sec, 4, readBuf);
 			fclose(consLog);
 		}
 		/*else if (*bufferFlag5 == 1)
@@ -139,7 +139,7 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 			t = time(NULL);
 			struct tm tm = *localtime(&t);
 			consLog = fopen(fileName, "a");
-			fprintf(consLog, "%d:%d:%d\tCheck\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
+			fprintf(consLog, "%02d:%02d:%02d\tCheck\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
 			fclose(consLog);
 		}
 		
@@ -156,7 +156,7 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 		t = time(NULL);
 		struct tm tm = *localtime(&t);
 		consLog = fopen(fileName, "a");
-		fprintf("%d:%d:%d\tSleep\t%d\n", tm.tm_hour, tm.tm_min, tm.tm_sec, secondsToWait);
+		fprintf("%02d:%02d:%02d\tSleep\t%d\n", tm.tm_hour, tm.tm_min, tm.tm_sec, secondsToWait);
 		sleep(secondsToWait);
 	}while(1);
 	
@@ -169,12 +169,12 @@ void handleTerm(int signo)
 {
 	if (signo == SIGTERM)
 	{
-		printf("test1consumer\n");
 		time_t t = time(NULL);
 		struct tm tm = *localtime(&t);
 		FILE* consLog = fopen(fileName, "a");
-		fprintf(consLog, "%d:%d:%d\tTerminated\tKilled\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
+		fprintf(consLog, "%02d:%02d:%02d\tTerminated\tKilled\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
 		fclose(consLog);
+		fprintf(stderr, "Consumer killed by master\n");
 		exit(0);
 	}
 }
