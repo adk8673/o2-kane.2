@@ -52,7 +52,6 @@ int main(int argc, char** argv)
 	int n = 10;
 	processName = argv[0];
 
-	allocateSharedMemory();
 	signal(SIGINT, signalInterruption);
 	signal(SIGALRM, signalInterruption);
  
@@ -84,11 +83,12 @@ int main(int argc, char** argv)
 		{
 			n = 18;
 		}
+		allocateSharedMemory(n);
 
 		childPids = malloc(sizeof(pid_t) * n);
 		
 		// create a child producer
-		childPids[numProcesses++] = createChildProcess("./producer", NULL);
+		childPids[numProcesses++] = createChildProcess("./producer", processName);
 		--n;
 
 		if (n > 0)
@@ -96,12 +96,14 @@ int main(int argc, char** argv)
 			int i;
 			for (i = 0; i < n; ++i)
 			{
-				childPids[numProcesses++] = createChildProcess("./consumer", NULL);
+				char processToCall[100];
+				snprintf(processToCall, sizeof(processToCall), "./consumer %d", i + 1);
+				childPids[numProcesses++] = createChildProcess(processToCall, processName);
 			}
 		}
 	}
 
-	setPeriodic(100);
+	setPeriodic(30);
 	
 	pid_t childpid;
 	int status;
@@ -113,7 +115,7 @@ int main(int argc, char** argv)
 		free(childPids);
 		childPids = NULL;
 	}
-
+	printf("about to exit");
 	deallocateAllSharedMemory();	
 	return 0;
 }
@@ -140,6 +142,14 @@ void allocateSharedMemory(int numChildren)
 	if((shmidNumProcesses = shmget(kNumProcesses, sizeof(int), memFlags)) == -1)
 	{
 		writeError("Failed to allocate shared memory for flags", processName);
+	}
+	else
+	{
+		int* sharedNumProcesses = shmat(shmidNumProcesses, 0, 0);
+		if ((int)sharedNumProcesses != -1)
+		{
+			*sharedNumProcesses = numChildren;
+		}
 	}
 	
 	kBufferFlag1 = getKey(4);
@@ -228,8 +238,10 @@ void displayHelp()
 
 void signalInterruption(int signo)
 {
+	printf("signo: %d\n", signo);
 	if (signo == SIGINT || signo == SIGALRM)
 	{
+		printf("entered handler\n");
 		int i;
 		for (i = 0; i < numProcesses; ++i)
 			kill(childPids[i], SIGKILL);
@@ -238,8 +250,11 @@ void signalInterruption(int signo)
 		pid_t childpid;		
 		while((childpid = wait(&status)) > 0)
 			--numProcesses;
-		
+	printf("handler deallocate\n");	
 		deallocateAllSharedMemory();
+		
+		if (childPids != NULL)
+			free(childPids);
 		kill(0, SIGKILL);
 	}	
 }

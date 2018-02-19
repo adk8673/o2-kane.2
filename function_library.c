@@ -18,6 +18,8 @@
 
 #define BILLION 1000000000L
 
+enum state { idle = 0, want_in = 1, in_cs = 2};
+
 // Check c-string to detemine if it contains
 // only numbers
 int checkNumber(const char* inputValue)
@@ -180,3 +182,41 @@ int setPeriodic(double sec)
 	return timer_settime(timerid, 0, &value, NULL);
 }
 
+void process(const int i, const int n, int* turn, int* flag)
+{
+	int j;
+	do 
+	{
+		do
+		{
+			flag[i] = (int)want_in;
+			j = *turn;
+			while (j != i)
+				j = (flag[j] != idle) ? *turn : (j + 1) % n;
+
+			// declare intention to enter critical section
+			flag[i] = in_cs;
+
+			// check that no one else is in the critical section
+			for (j = 0; j < n; j++)
+				if ((j != i) && (flag[j] == in_cs))
+					break;
+		} while ((j < n) || (*turn != i && flag[*turn] != idle));
+		
+		// Assign turn to self and enter critical section
+		*turn = i;
+		
+		sleep(1);
+
+		//Exit section
+		j = (*turn + 1) % n;
+		while (flag[j] == idle)
+		{
+			j = (j + 1) % n;
+		}
+		
+		//Assign turn to next waiting process; change own flag to idle 
+		*turn = j; flag[i] = idle;
+		sleep(2);
+	}while(1); 
+}
