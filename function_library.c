@@ -182,6 +182,7 @@ int setPeriodic(double sec)
 	return timer_settime(timerid, 0, &value, NULL);
 }
 
+/*
 void process(const int i, const int n, int* turn, int* flag)
 {
 	int j;
@@ -219,4 +220,4 @@ void process(const int i, const int n, int* turn, int* flag)
 		*turn = j; flag[i] = idle;
 		sleep(2);
 	}while(1); 
-}
+}*/

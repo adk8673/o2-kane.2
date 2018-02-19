@@ -22,3 +22,4 @@ clean:
 	rm -f producer
 	rm -f consumer
 	rm -f *.o
+	rm -f *.log

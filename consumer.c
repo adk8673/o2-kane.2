@@ -10,14 +10,21 @@
 #include<sys/shm.h>
 #include<sys/ipc.h>
 #include<sys/types.h>
-
+#include<string.h>
+#include<time.h>
+#include<signal.h>
 #include"function_library.h"
 
 enum state { idle = 0, want_in = 1, in_cs = 2};
-void process(const int, const int, int*, int*);
+void process(const int, const int, int*, int*, int*, char*, int*, char*, int*, char*, int*, char*, int*, char*);
+void handleTerm(int);
+
+char fileName[100];
 
 int main(int argc, char** argv)
 {
+	signal(SIGTERM, handleTerm);
+	srand(time(NULL));
 	int* turn = getExistingSharedMemory(1, argv[0]);
 	int* numProcesses = getExistingSharedMemory(3, argv[0]);
 	int* flags = getExistingSharedMemory(2, argv[0]);
@@ -29,20 +36,30 @@ int main(int argc, char** argv)
 	char* buffer3 = getExistingSharedMemory(9, argv[0]);
 	int* bufferFlag4 = getExistingSharedMemory(10, argv[0]);
 	char* buffer4 = getExistingSharedMemory(11, argv[0]);
-	int* bufferFlag5 = getExistingSharedMemory(12, argv[0]);
+	int* bufferFlag5 = getExistingSharedMemory(14, argv[0]);
 	char* buffer5 = getExistingSharedMemory(13, argv[0]);
 
 	int turnNumber = 0;
 	if (argc > 0)
 		turnNumber = atoi(argv[1]);
 	
-	process(turnNumber, *numProcesses, turn, flags);
+	snprintf(fileName, 100, "cons%d.log", turnNumber);
+	process(turnNumber, *numProcesses, turn, flags, bufferFlag1, buffer1, bufferFlag2, buffer2, bufferFlag3, buffer3, bufferFlag4, buffer4, bufferFlag5, buffer5);
 
 	return 0;
 }
-/*
-void process(const int i, const int n, int* turn, int* flag)
+
+void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, char* buffer1, int* bufferFlag2, char* buffer2,
+	int* bufferFlag3, char* buffer3, int* bufferFlag4, char* buffer4, int* bufferFlag5, char* buffer5)
 {
+	FILE* consLog;
+	time_t t = time(NULL);
+	struct tm tm = *localtime(&t);
+	
+	consLog = fopen(fileName, "w");
+	fprintf(consLog, "%d:%d:%d\tStarted\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
+	fclose(consLog);
+	
 	int j;
 	do 
 	{
@@ -52,7 +69,7 @@ void process(const int i, const int n, int* turn, int* flag)
 			j = *turn;
 			while (j != i)
 				j = (flag[j] != idle) ? *turn : (j + 1) % n;
-			printf("test2\n");
+
 			// declare intention to enter critical section
 			flag[i] = in_cs;
 
@@ -60,23 +77,104 @@ void process(const int i, const int n, int* turn, int* flag)
 			for (j = 0; j < n; j++)
 				if ((j != i) && (flag[j] == in_cs))
 					break;
-			printf("Turn in consumer: %d\n", *turn);
 		} while ((j < n) || (*turn != i && flag[*turn] != idle));
-	
-		printf("test 1 consumer\n");	
+		
 		// Assign turn to self and enter critical section
 		*turn = i;
-		printf("Consumer %d in critical section\n", i);
-		sleep(3);
+		
+		char readBuf[500];
+		int checked = 0;
+		if (*bufferFlag1 == 1)
+		{
+			strcpy(readBuf, buffer1);
+			*bufferFlag1 = 0;	
+			checked = 1;			
+			t = time(NULL);
+			struct tm tm = *localtime(&t);
+			consLog = fopen(fileName, "a");
+			fprintf(consLog, "%d:%d:%d\tRead\t%d\t%s\n", tm.tm_hour, tm.tm_min, tm.tm_sec, 1, readBuf);
+			fclose(consLog);
+		}
+		else if (*bufferFlag2 == 1)
+		{
+			strcpy(readBuf, buffer2);
+			*bufferFlag2 = 0;
+			checked = 1;		
+			t = time(NULL);
+			struct tm tm = *localtime(&t);
+			consLog = fopen(fileName, "a");
+			fprintf(consLog, "%d:%d:%d\tRead\t%d\t%s\n", tm.tm_hour, tm.tm_min, tm.tm_sec, 2, readBuf);
+			fclose(consLog);
+		}
+		else if (*bufferFlag3 == 1)
+		{
+			strcpy(readBuf, buffer3);
+			*bufferFlag3 = 0;
+			checked = 1;
+			t = time(NULL);
+			struct tm tm = *localtime(&t);
+			consLog = fopen(fileName, "a");
+			fprintf(consLog, "%d:%d:%d\tRead\t%d\t%s\n", tm.tm_hour, tm.tm_min, tm.tm_sec, 3, readBuf);
+			fclose(consLog);
+		}
+		else if (*bufferFlag4 == 1)
+		{
+			strcpy(readBuf, buffer4);
+			*bufferFlag4 = 0;
+			checked = 1;	
+			t = time(NULL);
+			struct tm tm = *localtime(&t);
+			consLog = fopen(fileName, "a");
+			fprintf(consLog, "%d:%d:%d\tRead\t%d\t%s\n", tm.tm_hour, tm.tm_min, tm.tm_sec, 4, readBuf);
+			fclose(consLog);
+		}
+		/*else if (*bufferFlag5 == 1)
+		{
+			strcpy(readBuf, buffer5);
+			*bufferFlag5 = 0;
+		}*/
 
+		if (checked == 0)
+		{
+			t = time(NULL);
+			struct tm tm = *localtime(&t);
+			consLog = fopen(fileName, "a");
+			fprintf(consLog, "%d:%d:%d\tCheck\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
+			fclose(consLog);
+		}
+		
 		//Exit section
 		j = (*turn + 1) % n;
-		printf("after cirtical\n");
 		while (flag[j] == idle)
+		{
 			j = (j + 1) % n;
+		}
 		
 		//Assign turn to next waiting process; change own flag to idle 
 		*turn = j; flag[i] = idle;
-		sleep(2);
-	}while(1); 
-}*/
+		int secondsToWait = rand() % 5;
+		t = time(NULL);
+		struct tm tm = *localtime(&t);
+		consLog = fopen(fileName, "a");
+		fprintf("%d:%d:%d\tSleep\t%d\n", tm.tm_hour, tm.tm_min, tm.tm_sec, secondsToWait);
+		sleep(secondsToWait);
+	}while(1);
+	
+	consLog = fprintf(fileName, "a");
+ 	fprintf(consLog, "%d:%d:%d\tTerminated\tNormal\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
+	fclose(consLog);
+}
+
+void handleTerm(int signo)
+{
+	if (signo == SIGTERM)
+	{
+		printf("test1consumer\n");
+		time_t t = time(NULL);
+		struct tm tm = *localtime(&t);
+		FILE* consLog = fopen(fileName, "a");
+		fprintf(consLog, "%d:%d:%d\tTerminated\tKilled\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
+		fclose(consLog);
+		exit(0);
+	}
+}

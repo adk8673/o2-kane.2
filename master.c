@@ -103,7 +103,7 @@ int main(int argc, char** argv)
 		}
 	}
 
-	setPeriodic(30);
+	setPeriodic(20);
 	
 	pid_t childpid;
 	int status;
@@ -200,7 +200,7 @@ void allocateSharedMemory(int numChildren)
 		writeError("Failed to allocate shared memory for buffer 4", processName);
 	}
 
-	kBufferFlag5 = getKey(12);
+	kBufferFlag5 = getKey(14);
 	if((shmidBufferFlag5 = shmget(kBufferFlag5, sizeof(int), IPC_CREAT)) == -1)
 	{
 		writeError("Failed to allocate shared memory for buffer 5 flag", processName);
@@ -238,23 +238,21 @@ void displayHelp()
 
 void signalInterruption(int signo)
 {
-	printf("signo: %d\n", signo);
 	if (signo == SIGINT || signo == SIGALRM)
 	{
-		printf("entered handler\n");
 		int i;
 		for (i = 0; i < numProcesses; ++i)
-			kill(childPids[i], SIGKILL);
+			kill(childPids[i], SIGTERM);
 		
 		int status;
 		pid_t childpid;		
 		while((childpid = wait(&status)) > 0)
 			--numProcesses;
-	printf("handler deallocate\n");	
 		deallocateAllSharedMemory();
 		
 		if (childPids != NULL)
 			free(childPids);
-		kill(0, SIGKILL);
+	
+		exit(0);
 	}	
 }
