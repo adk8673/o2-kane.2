@@ -13,9 +13,8 @@
 #include<sys/types.h>
 #include<signal.h>
 #include<time.h>
+#include"buffer_size.h"
 #include"function_library.h"
-
-#define BUFFER_SIZE 500
 
 void displayHelp();
 void deallocateAllSharedMemory();
@@ -115,7 +114,7 @@ int main(int argc, char** argv)
 		free(childPids);
 		childPids = NULL;
 	}
-	printf("about to exit");
+	
 	deallocateAllSharedMemory();	
 	return 0;
 }
@@ -201,7 +200,7 @@ void allocateSharedMemory(int numChildren)
 	}
 
 	kBufferFlag5 = getKey(14);
-	if((shmidBufferFlag5 = shmget(kBufferFlag5, sizeof(int), IPC_CREAT)) == -1)
+	if((shmidBufferFlag5 = shmget(kBufferFlag5, sizeof(int), memFlags)) == -1)
 	{
 		writeError("Failed to allocate shared memory for buffer 5 flag", processName);
 	}

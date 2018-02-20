@@ -12,6 +12,7 @@
 #include <string.h>
 #include <time.h>
 #include <signal.h>
+#include "buffer_size.h"
 #include "function_library.h"
 
 void process(const int, const int, int*, int*, int*, char*, int*, char*, int*, char*, int*, char*, int*, char*);
@@ -74,12 +75,11 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 		
 		// Assign turn to self and enter critical section
 		*turn = i;
-		char readBuf[500];
+		char readBuf[BUFFER_SIZE];
 		int wrote = 0;
 		if (*bufferFlag1 == 0)
 		{
-			printf("test2\n");
-			fgets(readBuf, 500, f);
+			fgets(readBuf, BUFFER_SIZE, f);
 			strcpy(buffer1, readBuf);
 			*bufferFlag1 = 1;
 			t = time(NULL);
@@ -91,7 +91,7 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 		}
 		if (*bufferFlag2 == 0)
 		{
-			fgets(readBuf, 500, f);
+			fgets(readBuf, BUFFER_SIZE, f);
 			strcpy(buffer2, readBuf);
 			*bufferFlag2 = 1;
 			t = time(NULL);
@@ -103,7 +103,7 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 		}
 		if (*bufferFlag3 == 0)
 		{
-			fgets(readBuf, 500, f);
+			fgets(readBuf, BUFFER_SIZE, f);
 			strcpy(buffer3, readBuf);
 			*bufferFlag3 = 1;
 			t = time(NULL);
@@ -115,7 +115,7 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 		}
 		if (*bufferFlag4 == 0)
 		{
-			fgets(readBuf, 500, f);
+			fgets(readBuf, BUFFER_SIZE, f);
 			strcpy(buffer4, readBuf);
 			*bufferFlag4 = 1;
 			t = time(NULL);
@@ -125,16 +125,23 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 			fclose(prodLog);
 			wrote = 1;
 		}
-/*		else if (*bufferFlag5 == 0)
+		if (*bufferFlag5 == 0)
 		{
-			fgets(readBuf, 500, f);
+			fgets(readBuf, BUFFER_SIZE, f);
 			strcpy(buffer5, readBuf);
 			*bufferFlag5 = 1;
-		}*/
+			t = time(NULL);
+			tm = *localtime(&t);
+			prodLog = fopen("prod.log", "a");
+			fprintf(prodLog, "%02d:%02d:%02d\tWrite\t%d\t%s\n", tm.tm_hour, tm.tm_min, tm.tm_sec, 4, buffer4);
+			fclose(prodLog);
+			wrote = 1;
+		}
 	
-
 		if (wrote == 0)
 		{
+			t = time(NULL);
+			tm = *localtime(&t);
 			prodLog = fopen("prod.log", "a");
 			fprintf(prodLog, "%02d:%02d:%02d\tCheck\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
 			fclose(prodLog);

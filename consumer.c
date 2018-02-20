@@ -13,6 +13,7 @@
 #include<string.h>
 #include<time.h>
 #include<signal.h>
+#include"buffer_size.h"
 #include"function_library.h"
 
 enum state { idle = 0, want_in = 1, in_cs = 2};
@@ -82,7 +83,7 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 		// Assign turn to self and enter critical section
 		*turn = i;
 		
-		char readBuf[500];
+		char readBuf[BUFFER_SIZE];
 		int checked = 0;
 		if (*bufferFlag1 == 1)
 		{
@@ -128,11 +129,18 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 			fprintf(consLog, "%02d:%02d:%02d\tRead\t%d\t%s\n", tm.tm_hour, tm.tm_min, tm.tm_sec, 4, readBuf);
 			fclose(consLog);
 		}
-		/*else if (*bufferFlag5 == 1)
+		else if (*bufferFlag5 == 1)
 		{
 			strcpy(readBuf, buffer5);
 			*bufferFlag5 = 0;
-		}*/
+			checked = 1;	
+			t = time(NULL);
+			struct tm tm = *localtime(&t);
+			consLog = fopen(fileName, "a");
+			fprintf(consLog, "%02d:%02d:%02d\tRead\t%d\t%s\n", tm.tm_hour, tm.tm_min, tm.tm_sec, 4, readBuf);
+			fclose(consLog);
+
+		}
 
 		if (checked == 0)
 		{
