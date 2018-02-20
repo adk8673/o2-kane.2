@@ -1,0 +1,18 @@
+Project 2
+Alex Kane
+CS 4760 Spring 2018
+
+This project contains source files that will make three executable files, master, producer, and consumer.  master is the only executable to be designed to be called from the command line. 
+Master accepts the arguments -n i where i is the number of children that will be spawned off.  One of these children will always be a producer, so i-1 consumers will be created off of the parent. 
+
+Five buffers, each with a flag that represents data are created in shared memory.  There are also flag and turn values that are used to manage concurrency.  As these children run, they all write to specific logs, with the producer logging writes and consumers logging reads.  Consumers also write to one master log file, writing the message they read from their buffer.  This file is title master.log.
+
+Passing the -h option lists available options.
+
+There is a Makefile which is used to build the project.  It can also clean out all object, executable and logs files.
+
+There is also a bash script which can be used to analyze an .log files (it ignores the master.log).  It will list statistics for each log file, and then some overal statistics.  It can be called using ./analysisscript.sh  It doesn't build and run the project itself, so this must be done prior to the running of the script.
+
+Note:  It appears that all the consumers are sleeping for identical amounts of time.  I'm not really sure why this is, the best gues I have is that they have been seeded to the same time, but that doesn't seem like it should be happening.
+
+Commits to this project can be seen at: https://github.com/adk8673/o2-kane.2/commits/master

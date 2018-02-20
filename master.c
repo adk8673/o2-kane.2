@@ -109,7 +109,7 @@ int main(int argc, char** argv)
 		}
 	}
 
-	setPeriodic(20);
+	setPeriodic(100);
 	
 	pid_t childpid;
 	int status;
