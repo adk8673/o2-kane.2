@@ -53,7 +53,11 @@ int main(int argc, char** argv)
 
 	signal(SIGINT, signalInterruption);
 	signal(SIGALRM, signalInterruption);
- 
+	
+	// Overwrite file
+	FILE* f = fopen("master.log", "w"); 
+	fclose(f);
+	
 	int c;
 	char* arg;
 	while ((c = getopt(argc, argv, "hn:")) != -1)
@@ -70,7 +74,10 @@ int main(int argc, char** argv)
 				{
 					n = atoi(arg);
 				}
-				break;			
+				break;
+			default:
+				n = 10;
+				break;
 		}
 	}
 
@@ -239,6 +246,10 @@ void signalInterruption(int signo)
 {
 	if (signo == SIGINT || signo == SIGALRM)
 	{
+		if (signo == SIGINT)
+			printf("Process interrupted by user\n");
+		else if (signo == SIGALRM)
+			printf("Process ended by timer\n");
 		int i;
 		for (i = 0; i < numProcesses; ++i)
 			kill(childPids[i], SIGTERM);

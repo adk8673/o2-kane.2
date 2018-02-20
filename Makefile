@@ -3,19 +3,21 @@ MASTER_OBJECTS=master.o function_library.o
 PRODUCER_OBJECTS=producer.o function_library.o
 CONSUMER_OBJECTS=consumer.o function_library.o
 LINKEDLBS=-lrt
+CFLAGS=-w
+
 default: master producer consumer
 
 %.o: %.c
-	$(CC) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 master: $(MASTER_OBJECTS)
-	$(CC) $(LINKEDLBS) $(MASTER_OBJECTS) -o master
+	$(CC) $(CFLAGS) $(LINKEDLBS) $(MASTER_OBJECTS) -o master
 
 producer: producer.o function_library.o
-	$(CC) $(LINKEDLBS) $(PRODUCER_OBJECTS) -o producer
+	$(CC) $(CFLAGS) $(LINKEDLBS) $(PRODUCER_OBJECTS) -o producer
 
 consumer: consumer.o function_library.o
-	$(CC) $(LINKEDLBS) $(CONSUMER_OBJECTS) -o consumer
+	$(CC) $(CFLAGS) $(LINKEDLBS) $(CONSUMER_OBJECTS) -o consumer
 
 clean:
 	rm -f master

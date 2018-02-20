@@ -45,8 +45,7 @@ int main(int argc, char** argv)
 		turnNumber = atoi(argv[1]);
 	
 	snprintf(fileName, 100, "cons%d.log", turnNumber);
-	process(turnNumber, *numProcesses, turn, flags, bufferFlag1, buffer1, bufferFlag2, buffer2, bufferFlag3, buffer3, bufferFlag4, buffer4, bufferFlag5, buffer5);
-
+	process(turnNumber, *numProcesses, turn, flags, bufferFlag1, buffer1, bufferFlag2, buffer2, bufferFlag3, buffer3, bufferFlag4, buffer4, bufferFlag5, buffer5);	
 	return 0;
 }
 
@@ -64,6 +63,11 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 	int j;
 	do 
 	{
+		t = time(NULL);
+		tm = *localtime(&t);
+		consLog = fopen(fileName, "a");
+		fprintf(consLog, "%02d:%02d:%02d\tAttempt to access critical section\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
+		fclose(consLog);
 		do
 		{
 			flag[i] = (int)want_in;
@@ -150,6 +154,30 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 			fprintf(consLog, "%02d:%02d:%02d\tCheck\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
 			fclose(consLog);
 		}
+		else
+		{
+			t = time(NULL);
+			struct tm tm = *localtime(&t);
+			consLog = fopen(fileName, "a");
+			fprintf(consLog, "%02d:%02d:%02d\tAttempting to write master log file\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
+			FILE* masterlog = fopen("master.log", "a");
+			if (masterlog != NULL)
+			{
+				fprintf(masterlog, "%d\t%d\t%s\n", getpid(), i, readBuf);
+				fclose(masterlog);
+				t = time(NULL);
+				struct tm tm = *localtime(&t);
+				fprintf(consLog, "%02d:%02d:%02d\tWrote master log file\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
+			}
+			else
+			{
+				t = time(NULL);
+				struct tm tm = *localtime(&t);
+				fprintf(consLog, "%02d:%02d:%02d\tFailed to write master log file\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
+			}
+			fclose(consLog);
+		}
+
 		
 		//Exit section
 		j = (*turn + 1) % n;
@@ -160,11 +188,12 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 		
 		//Assign turn to next waiting process; change own flag to idle 
 		*turn = j; flag[i] = idle;
-		int secondsToWait = rand() % 5;
+		int secondsToWait = (rand() % 5) + 1;
 		t = time(NULL);
 		struct tm tm = *localtime(&t);
 		consLog = fopen(fileName, "a");
-		fprintf("%02d:%02d:%02d\tSleep\t%d\n", tm.tm_hour, tm.tm_min, tm.tm_sec, secondsToWait);
+		fprintf(consLog, "%02d:%02d:%02d\tSleep\t%d\n", tm.tm_hour, tm.tm_min, tm.tm_sec, secondsToWait);
+		fclose(consLog);
 		sleep(secondsToWait);
 	}while(1);
 	

@@ -57,6 +57,11 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 	int j;
 	do 
 	{
+		t = time(NULL);
+		tm = *localtime(&t);
+		prodLog = fopen("prod.log","a");
+		fprintf(prodLog, "%02d:%02d:%02d\tAttempt to access critical section\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
+		fclose(prodLog);
 		do
 		{
 			flag[i] = (int)want_in;
@@ -156,7 +161,13 @@ void process(const int i, const int n, int* turn, int* flag, int* bufferFlag1, c
 		
 		//Assign turn to next waiting process; change own flag to idle 
 		*turn = j; flag[i] = idle;
-		sleep(rand() % 10);
+		int sleepTime = (rand() % 10) + 1;
+		t = time(NULL);
+		tm = *localtime(&t);
+		prodLog = fopen("prod.log", "a");
+		fprintf(prodLog, "%02d:%02d:%02d\tSleep\t%d\n", tm.tm_hour, tm.tm_min, tm.tm_sec, sleepTime);
+		fclose(prodLog);
+		sleep(sleepTime);
 	}while(1);
  	fclose(f);
 	
